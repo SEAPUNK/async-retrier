@@ -3,8 +3,8 @@ import recaller, {
   constantBackoff,
   exponentialBackoff,
   fullJitterBackoff,
-  equalJitterBackoff // ,
-  // decorrelatedJitterBackoff
+  equalJitterBackoff,
+  decorrelatedJitterBackoff
 } from './'
 
 test('function should not be retried if async function is ok', async t => {
@@ -375,4 +375,49 @@ test('equalJitterBackoff', t => {
   }
 })
 
-// TODO: Other backoff tests
+test('decorrelatedJitterBackoff', t => {
+  t.plan(4 * 10000)
+
+  // Default options, first value
+  for (let i = 0; i < 10000; i++) {
+    const gen = decorrelatedJitterBackoff()
+    const val = gen()
+    t.is((
+      val >= 1000 &&
+      val <= 3000
+    ), true)
+  }
+
+  // Default options, second value
+  for (let i = 0; i < 10000; i++) {
+    const gen = decorrelatedJitterBackoff()
+    gen() // generate first
+    const val = gen()
+    t.is((
+      val >= 1000 &&
+      val <= 9000
+    ), true)
+  }
+
+  // Capped (otherwise default), third value
+  for (let i = 0; i < 10000; i++) {
+    const gen = decorrelatedJitterBackoff({cap: 24000})
+    gen() // generate first
+    gen() // generate second
+    const val = gen()
+    t.is((
+      val >= 1000 &&
+      val <= 24000
+    ), true)
+  }
+
+  // times 4, first value
+  for (let i = 0; i < 10000; i++) {
+    const gen = decorrelatedJitterBackoff({times: 4})
+    const val = gen()
+    t.is((
+      val >= 1000 &&
+      val <= 4000
+    ), true)
+  }
+})

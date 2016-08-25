@@ -80,6 +80,7 @@ test('bailing should work (nothing provided)', async t => {
   try {
     await recaller(async (bail) => {
       bail()
+      throw new Error('well')
     })
     t.fail('did not throw')
   } catch (err) {
